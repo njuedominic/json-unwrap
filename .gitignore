@@ -1,0 +1,15 @@
+# Virtual Environment
+venv/
+Env/
+.env/
+
+# Python build and distribution files
+build/
+dist/
+*.egg-info/
+
+# Byte-compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
