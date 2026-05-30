@@ -13,3 +13,13 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# Saved data files
+data/
+*.csv
+*.json
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+# IDE and editor files
+*.DS_Store
