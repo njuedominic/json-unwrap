@@ -23,3 +23,6 @@ dependencies = [
 [project.urls]
 "Homepage" = "https://github.com/njuedominic/json-unwrap"
 "Bug Tracker" = "https://github.com/njuedominic/json-unwrap/issues"
+
+[tool.setuptools]
+packages = ["jsonunwrap"]

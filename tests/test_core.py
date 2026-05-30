@@ -1,6 +1,6 @@
 import pandas as pd
 import pytest
-import json_unwrap as ju
+import jsonunwrap as ju
 
 def test_unwrap_data_basic_flattening():
     """Test that basic nested dictionaries are flattened with dot notation."""
