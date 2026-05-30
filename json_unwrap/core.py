@@ -7,33 +7,20 @@ from typing import Any, Dict, List, Union
 import pandas as pd
 import requests
 
-def unwrap_data(data: Union[Dict[str, Any], List[Any]], parent_key: str = '', sep: str = '.') -> Dict[str, Any]:
+def unwrap_data(data: Union[Dict[str, Any], List[Any]]) -> pd.DataFrame:
     """
-    Takes a nested JSON object and flattens it into a single level dictionary.
-    
-    Args:
-        data: The JSON data to be unwrapped, which can be a dictionary or a list.
-        parent_key: The base key to use for the current level of nesting (used for recursion).
-        sep: The separator to use between keys when flattening.
-
-    Returns:
-        A flattened dictionary with unwrapped keys.
-
+    Normalizes and deeply flattens semi-structured JSON data into a pandas DataFrame.
     """
-    #. 1 Input validation
+    # Simply convert a single dictionary into a list containing that dictionary
     if isinstance(data, dict):
-        main_data = next(
-            (value for value in data.values() if isinstance(value, list)),
-            [data]
-        )
+        main_data = [data]
     else:
         main_data = data
 
-
-    #2. Normalize the JSON data using pandas
+    # Perform the initial normalization
     df = pd.json_normalize(main_data)
 
-   # Flatten the nested columns and use a while loop to handle deeply nested structures
+    # Automatically iterate through the columns and deeply flatten any nested structures
     changed = True
     while changed:
         changed = False
@@ -42,9 +29,9 @@ def unwrap_data(data: Union[Dict[str, Any], List[Any]], parent_key: str = '', se
             if any(isinstance(val, list) for val in df[col].dropna()):
                 df = df.explode(col)
                 changed = True
-                break  # Break to refresh columns list after structural change
+                break  # Refresh columns list after structural changes
 
-            # Normalize and join dictionaries
+            # Normalize and merge nested dictionaries
             if any(isinstance(val, dict) for val in df[col].dropna()):
                 nested_df = pd.json_normalize(df[col]).set_index(df.index)
                 df = df.drop(columns=[col]).join(nested_df, rsuffix=f"_{col}")
@@ -52,6 +39,7 @@ def unwrap_data(data: Union[Dict[str, Any], List[Any]], parent_key: str = '', se
                 break
                 
     return df
+
  
 def fetch_json(url: str, **kwargs: Any) -> Union[Dict[str, Any], List[Any]]:
     """
