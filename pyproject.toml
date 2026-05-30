@@ -1,8 +1,8 @@
 [build-system]
 requires = ["setuptools>=61.0"]
-build-backend = setuptools.build_meta"
+build-backend = "setuptools.build_meta"
 
-[pyproject]
+[project]
 name = "jsonunwrap"
 version = "0.1.0"
 authors = [
@@ -18,7 +18,7 @@ classifiers = [
 ]
 dependencies = [
     "requests>=2.28.0",
-    "pandas>=2.0.0"
+    "pandas>=2.0.0",
 ]
 [project.urls]
 "Homepage" = "https://github.com/njuedominic/json-unwrap"
