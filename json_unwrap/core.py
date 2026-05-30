@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Union
 import pandas as pd
 import requests
 
-def unrwap_data(data: Union[Dict[str, Any], List[Any]], parent_key: str = '', sep: str = '.') -> Dict[str, Any]:
+def unwrap_data(data: Union[Dict[str, Any], List[Any]], parent_key: str = '', sep: str = '.') -> Dict[str, Any]:
     """
     Takes a nested JSON object and flattens it into a single level dictionary.
     
@@ -83,7 +83,7 @@ def json_to_csv(url: str, output_path: str) -> pd.DataFrame:
         os.makedirs(directory, exist_ok=True)
         
     raw_data = fetch_json(url)
-    df = unrwap_data(raw_data)
+    df = unwrap_data(raw_data)
     
     df.to_csv(output_path, index=False)
     return df
