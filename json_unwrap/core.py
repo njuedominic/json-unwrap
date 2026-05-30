@@ -83,7 +83,7 @@ def json_to_csv(url: str, output_path: str) -> pd.DataFrame:
         os.makedirs(directory, exist_ok=True)
         
     raw_data = fetch_json(url)
-    df = unwrap_data(raw_data)
+    df = unrwap_data(raw_data)
     
     df.to_csv(output_path, index=False)
     return df
