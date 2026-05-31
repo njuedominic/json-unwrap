@@ -11,33 +11,53 @@ def unwrap_data(data: Union[Dict[str, Any], List[Any]]) -> pd.DataFrame:
     """
     Normalizes and deeply flattens semi-structured JSON data into a pandas DataFrame.
     """
-    # Simply convert a single dictionary into a list containing that dictionary
+    # 1. Ensure we start with a clean record list
     if isinstance(data, dict):
-        main_data = [data]
+        # Handle cases where the data is inside a wrapper key (like {"products": [...]})
+        list_keys = [k for k, v in data.items() if isinstance(v, list)]
+        if list_keys and len(data) <= 4:
+            main_data = data[list_keys[0]]
+        else:
+            main_data = [data]
     else:
         main_data = data
 
-    # Perform the initial normalization
+    # 2. Base normalization
     df = pd.json_normalize(main_data)
 
-    # Automatically iterate through the columns and deeply flatten any nested structures
-    changed = True
-    while changed:
-        changed = False
-        for col in list(df.columns):
-            # Explode lists
-            if any(isinstance(val, list) for val in df[col].dropna()):
-                df = df.explode(col)
-                changed = True
-                break  # Refresh columns list after structural changes
+    # 3. Clean Linear Pass: Avoid infinite loops by tracking column states directly
+    columns_to_process = list(df.columns)
+    
+    while columns_to_process:
+        col = columns_to_process.pop(0)
+        
+        # Guard check if the column was dropped in a previous iteration
+        if col not in df.columns:
+            continue
+            
+        non_null_vals = df[col].dropna()
+        if non_null_vals.empty:
+            continue
 
-            # Normalize and merge nested dictionaries
-            if any(isinstance(val, dict) for val in df[col].dropna()):
-                nested_df = pd.json_normalize(df[col]).set_index(df.index)
-                df = df.drop(columns=[col]).join(nested_df, rsuffix=f"_{col}")
-                changed = True
-                break
-                
+        # Check for nested dictionaries
+        if any(isinstance(val, dict) for val in non_null_vals):
+            nested_df = pd.json_normalize(non_null_vals).set_index(non_null_vals.index)
+            # Add new sub-columns back into the processing queue
+            new_cols = [f"{c}_{col}" for c in nested_df.columns]
+            df = df.drop(columns=[col]).join(nested_df, rsuffix=f"_{col}")
+            columns_to_process.extend(new_cols)
+
+        # Check for nested lists (But do not loop back if it's just raw strings/ints)
+        elif any(isinstance(val, list) for val in non_null_vals):
+            # Check if the list contains dictionaries before exploding heavily
+            first_list = next((v for v in non_null_vals if isinstance(v, list) and v), None)
+            
+            df = df.explode(col)
+            
+            # If the inner elements were dictionaries, we need to flatten them on the next pass
+            if first_list and isinstance(first_list[0], dict):
+                columns_to_process.append(col)
+
     return df
 
  
