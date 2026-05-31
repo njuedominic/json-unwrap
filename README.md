@@ -4,13 +4,20 @@
 
 ```python
 >>> import jsonunwrap as ju
->>> url = "https://dummyjson.com/carts"
+>>> url = "https://dummyjson.com/products"
 >>> fetchdata = ju.fetch_json(url)
 >>> df = ju.unwrap_data(fetchdata)
 >>> df.columns
-Index(['id', 'user.name', 'hobbies'], dtype='object')
+Index(['id', 'title', 'description', 'category', 'price', 'discountPercentage',
+       'rating', 'stock', 'tags', 'brand', 'sku', 'weight',
+       'warrantyInformation', 'shippingInformation', 'availabilityStatus',
+       'returnPolicy', 'minimumOrderQuantity', 'images', 'thumbnail',
+       'dimensions.width', 'dimensions.height', 'dimensions.depth',
+       'meta.createdAt', 'meta.updatedAt', 'meta.barcode', 'meta.qrCode',
+       'rating_reviews', 'comment', 'date', 'reviewerName', 'reviewerEmail'],
+      dtype='object')
 >>> len(df)
-2
+3771
 ```
 
 jsonunwrap allows you to deeply normalize complex, semi-structured nested JSON data into clean pandas DataFrames extremely easily.
