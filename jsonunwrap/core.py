@@ -11,9 +11,9 @@ def unwrap_data(data: Union[Dict[str, Any], List[Any]]) -> pd.DataFrame:
     """
     Normalizes and deeply flattens semi-structured JSON data into a pandas DataFrame.
     """
-    # 1. Ensure we start with a clean record list
+    # 1. Start with a clean record list
     if isinstance(data, dict):
-        # Handle cases where the data is inside a wrapper key (like {"products": [...]})
+        # Handle cases where the data is inside a wrapper key (e.g {"products": [...]})
         list_keys = [k for k, v in data.items() if isinstance(v, list)]
         if list_keys and len(data) <= 4:
             main_data = data[list_keys[0]]
@@ -25,13 +25,13 @@ def unwrap_data(data: Union[Dict[str, Any], List[Any]]) -> pd.DataFrame:
     # 2. Base normalization
     df = pd.json_normalize(main_data)
 
-    # 3. Clean Linear Pass: Avoid infinite loops by tracking column states directly
+    # 3. Avoid infinite loops by tracking column states directly
     columns_to_process = list(df.columns)
     
     while columns_to_process:
         col = columns_to_process.pop(0)
         
-        # Guard check if the column was dropped in a previous iteration
+        # Safety check if the column was dropped in a previous iteration
         if col not in df.columns:
             continue
             
@@ -47,14 +47,14 @@ def unwrap_data(data: Union[Dict[str, Any], List[Any]]) -> pd.DataFrame:
             df = df.drop(columns=[col]).join(nested_df, rsuffix=f"_{col}")
             columns_to_process.extend(new_cols)
 
-        # Check for nested lists (But do not loop back if it's just raw strings/ints)
+        # Check for nested lists that are not empty
         elif any(isinstance(val, list) for val in non_null_vals):
-            # Check if the list contains dictionaries before exploding heavily
+            # Check if the list contains dictionaries before exploding.
             first_list = next((v for v in non_null_vals if isinstance(v, list) and v), None)
             
             df = df.explode(col)
             
-            # If the inner elements were dictionaries, we need to flatten them on the next pass
+            # Flatten inner elements if they are dictionaries after explosion.
             if first_list and isinstance(first_list[0], dict):
                 columns_to_process.append(col)
 
